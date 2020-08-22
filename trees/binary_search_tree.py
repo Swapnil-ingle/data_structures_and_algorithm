@@ -9,6 +9,23 @@ class BST:
     def __init__(self):
         self.root = None
 
+    def getHeight(self):
+        if self.root is None:
+            return 0
+
+        return self._getHeight(self.root)
+
+    def _getHeight(self, curr_node):
+        if (curr_node is None):
+            return 0
+        lHeight = self._getHeight(curr_node.left_child)
+        rHeight = self._getHeight(curr_node.right_child)
+
+        if (lHeight > rHeight):
+            return lHeight + 1
+        else:
+            return rHeight + 1
+
     def insert(self, value):
         if self.root is None:
             self.root = Node(value)
@@ -150,7 +167,7 @@ class BST:
         if (curr_node is None):
             print("Either node does not exists or is empty.")
             return False
-        
+
         def _deleteNodeWithNoChildren(curr_node):
             parent = curr_node.parent
             if (_isDeletingNodeALeftChild(parent, curr_node)):
@@ -236,3 +253,6 @@ print("Deleting 5 from the tree: ", end="")
 tree.deleteValue(5)
 print("Tree after deletion is: ", end="")
 tree.printTree()
+# Printing height of tree
+print("Printing height of tree: ", end="")
+print(tree.getHeight())
