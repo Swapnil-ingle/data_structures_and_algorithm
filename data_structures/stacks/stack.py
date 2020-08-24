@@ -2,31 +2,31 @@ class Stack:
     def __init__(self, size):
         self.size = size
         self.stack = [None] * size
-        self.head = 0
+        self.head = -1
 
     def push(self, element):
         # Check if stack is full
-        if (self.head >= self.size):
+        if (self.head >= self.size - 1):
             print("Cannot add element - stack is full!")
         else:
-            self.stack[self.head] = element
             self.head = self.head + 1
+            self.stack[self.head] = element
             print("Pushed element!")
 
     def pop(self):
         # Check if stack is empty
-        if (self.head == 0):
+        if (self.head == -1):
             print("Cannot pop element - stack is empty!")
         else:
+            self.stack[self.head] = None
             self.head = self.head - 1
-            del self.stack[self.head]
             print("Pop'd element!")
 
     def print(self):
-        for item in self.stack:
-            print(item)
-        print("Head is at - ", end="")
-        print(self.head)
+        print("######### Printing Stack #########")
+        stack = " - ".join(map(str, self.stack))
+        print("(bottom) {} (top)".format(stack))
+
 
 # Driver code
 stack = Stack(5)
