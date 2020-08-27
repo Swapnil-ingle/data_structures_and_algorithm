@@ -35,13 +35,14 @@ class LinkedList:
         else:
             self.head = newNode
 
-    def insertAt(self, data, pos):
-        # TODO: Finish this implementation
+    def search(self, data):
         currNode = self.head
-        currPos = 0
-        while (currNode and currPos < pos):
-            currNode = currNode.next
-            currPos += 1
+        while (currNode):
+            if (currNode.value == data):
+                print("Found {} in the linked list".format(data))
+                return data
+            currNode = currNode.next;
+        print("{} does not exist in the linked list".format(data))
 
     def delete(self, element):
         currNode = self.head
@@ -60,7 +61,6 @@ class LinkedList:
             self.head = self.head.next
         currNode = None
 
-
 # Driver code
 ll = LinkedList()
 # print(ll.lenght())
@@ -70,5 +70,10 @@ ll.insert(4)
 ll.print()
 ll.delete(2)
 ll.delete(4)
-ll.delete(3)
+ll.print()
+ll.insert(4)
+ll.insert(5)
+ll.insert(6)
+ll.insert(7)
+ll.search(9)
 ll.print()
