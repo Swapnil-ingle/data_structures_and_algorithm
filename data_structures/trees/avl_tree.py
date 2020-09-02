@@ -61,19 +61,24 @@ class AVL:
             if curr_node.left_child is None:
                 curr_node.left_child = Node(value)
                 curr_node.left_child.parent = curr_node
-                curr_node.left_child.parent.height += 1
+                self._incrementParHeight(curr_node)
             else:
                 self._insert(value, curr_node.left_child)
         elif value > curr_node.value:
             if (curr_node.right_child is None):
                 curr_node.right_child = Node(value)
                 curr_node.right_child.parent = curr_node
-                curr_node.right_child.parent.height += 1
+                self._incrementParHeight(curr_node)
             else:
                 self._insert(value, curr_node.right_child)
         else:
             print(value)
             print("This value is already present")
+
+    def _incrementParHeight(self, curr_node):
+        while (curr_node):
+            curr_node.height += 1
+            curr_node = curr_node.parent
 
     def printTree(self):
         if self.root != None:
@@ -250,5 +255,6 @@ avl = AVL()
 avl.insert(2)
 avl.insert(1)
 avl.insert(4)
-avl.insert(3)
+avl.insert(5)
+avl.insert(6)
 avl.printTree()
