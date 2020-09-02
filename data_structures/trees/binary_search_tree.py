@@ -5,6 +5,7 @@ class Node:
         self.right_child = None
         self.parent = None
 
+
 class BST:
     def __init__(self):
         self.root = None
@@ -218,6 +219,7 @@ class BST:
         # Case 2: If the curr_node has two children --> Find succesor replace and delete
         if (curr_node.left_child != None and curr_node.right_child != None):
             _deleteNodeWithTwoChildren(curr_node)
+
 
 # Driver Code:
 tree = BST()
