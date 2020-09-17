@@ -28,10 +28,59 @@ class Node:
         self.parent = None
         self.height = 1
 
-
 class AVL:
     def __init__(self):
         self.root = None
+    
+    def __repr__(self):
+        if (self.root is None):
+            return ''
+        content='\n' # to hold final string
+        cur_nodes=[self.root] # all nodes at current level
+        cur_height=self.root.height # height of nodes at current level
+        sep=' '*(2**(cur_height-1)) # variable sized separator between elements
+        while True:
+            cur_height+=-1 # decrement current height
+            if len(cur_nodes)==0: break
+            cur_row=' '
+            next_row=''
+            next_nodes=[]
+            
+            if all(n is None for n in cur_nodes):
+                break
+
+            for n in cur_nodes:
+                if n==None:
+                    cur_row+='   '+sep
+                    next_row+='   '+sep
+                    next_nodes.extend([None,None])
+                    continue
+
+                if n.value!=None:       
+                    buf=' '*int((5-len(str(n.value)))/2)
+                    cur_row+='%s%s%s'%(buf,str(n.value),buf)+sep
+                else:
+                    cur_row+=' '*5+sep
+                
+                if n.left_child!=None:
+                    next_nodes.append(n.left_child)
+                    next_row+=' /'+sep
+                else:
+                    next_row+='  '+sep
+                    next_nodes.append(None)
+                    
+                if n.right_child!=None: 
+                    next_nodes.append(n.right_child)
+                    next_row+='\ '+sep
+                else:
+                    next_row+='  '+sep
+                    next_nodes.append(None)
+                    
+            content+=(cur_height*'   '+cur_row+'\n'+cur_height*'   '+next_row+'\n')
+            cur_nodes=next_nodes
+            sep=' '*int(len(sep)/2) # cut separator size in half
+        
+        return content
 
     def getHeight(self):
         if self.root is None:
@@ -61,14 +110,16 @@ class AVL:
             if curr_node.left_child is None:
                 curr_node.left_child = Node(value)
                 curr_node.left_child.parent = curr_node
-                self._incrementParHeight(curr_node)
+                # self._incrementParHeight(curr_node)
+                self._inspect_insertion(curr_node.left_child)
             else:
                 self._insert(value, curr_node.left_child)
         elif value > curr_node.value:
             if (curr_node.right_child is None):
                 curr_node.right_child = Node(value)
                 curr_node.right_child.parent = curr_node
-                self._incrementParHeight(curr_node)
+                # self._incrementParHeight(curr_node)
+                self._inspect_insertion(curr_node.right_child)
             else:
                 self._insert(value, curr_node.right_child)
         else:
@@ -230,6 +281,7 @@ class AVL:
             else:
                 return False
 
+        node_parent = curr_node.parent
         if (curr_node.parent is None):
             # Deleting root node
             _deleteNodeWithTwoChildren(curr_node)
@@ -249,12 +301,122 @@ class AVL:
         # Case 2: If the curr_node has two children --> Find succesor replace and delete
         if (curr_node.left_child != None and curr_node.right_child != None):
             _deleteNodeWithTwoChildren(curr_node)
+            return
+        
+        if node_parent != None:
+            node_parent.height = 1 + max(self.getHeight(node_parent.left_child),
+            self.getHeight(node_parent.right_child))
+
+            self._inspect_deletion(node_parent)
+
+    def _inspect_insertion(self, curr_node, path=[]):
+        if curr_node.parent == None:
+            return
+        
+        path = [curr_node] + path
+
+        left_height = self.getHeight(curr_node.parent.left_child)
+        right_height = self.getHeight(curr_node.parent.right_child)
+
+        if abs(left_height - right_height) > 1:
+            # Imbalanced
+            path = [curr_node.parent] + path
+            self._rebalance_node(path[0], path[1], path[2])
+            return
+        
+        new_height = 1 + curr_node.height
+        if new_height > curr_node.parent.height:
+            curr_node.parent.height = new_height
+        
+        self._inspect_insertion(curr_node.parent, path)
+
+    def _inspect_deletion(self, curr_node):
+        if (curr_node == None):
+            return
+        
+        left_height = self.getHeight(curr_node.left_child)
+        right_height = self.getHeight(curr_node.right_child)
+
+        if abs(left_height - right_height) > 1:
+            y = self.taller_child(curr_node)
+            x = self.taller_child(y)
+            self._rebalance_node(curr_node, y, x)
+        
+        self._inspect_deletion(curr_node.parent)
+
+    def _rebalance_node(self, z, y ,x):
+        if (y == z.left_child and x == y.left_child):
+            self._right_rotate(z)
+        elif (y == z.left_child and x == y.right_child):
+            self._left_rotate(y)
+            self._right_rotate(z)
+        elif (y == z.right_child and x == y.right_child):
+            self._left_rotate(z)
+        elif (y == z.right_child and x == y.left_child):
+            self._right_rotate(y)
+            self._left_rotate(z)
+        else:
+            raise Exception('z,y,x node configuration not recognized!')
+
+    def _right_rotate(self, z):
+        sub_root = z.parent;
+        y = z.left_child;
+        t3 = y.right_child;
+        y.right_child = z;
+        z.parent = y;
+        z.left_child = t3;
+        if t3 != None:
+            t3.parent = z
+        y.parent = sub_root
+        if (y.parent == None):
+            self.root = y
+        else:
+            if y.parent.left_child == z:
+                y.parent.left_child = y
+            else:
+                y.parent.right_child = y
+        # Increment heights
+        z.height = 1 + max(self.getHeight(z.left_child), self.getHeight(z.right_child))
+        y.height = 1 + max(self.getHeight(y.left_child), self.getHeight(y.right_child))
+
+    def _left_rotate(self, z):
+        sub_root = z.parent
+        y = z.right_child
+        t2 = y.left_child
+        y.left_child = z
+        z.parent = y
+        z.right_child = t2
+        if t2 != None:
+            t2.parent = z
+        y.parent = sub_root
+        if (y.parent is None):
+            self.root = y
+        else:
+            if (y.parent.left_child == z):
+                y.parent.left_child = y
+            else:
+                y.parent.right_child = y
+        # Increment heights
+        z.height = 1 + max(self.getHeight(z.left_child), self.getHeight(z.right_child))
+        y.height = 1 + max(self.getHeight(y.left_child), self.getHeight(y.right_child))
+
+    def getHeight(self, curr_node):
+        if curr_node == None:
+            return 0
+        return curr_node.height
+    
+    def taller_child(self, curr_node):
+        left = self.getHeight(curr_node.left_child);
+        right = self.getHeight(curr_node.right_child);
+        return curr_node.left_child if left >= right else curr_node.right_child;
 
 ## Driver Code
 avl = AVL()
-avl.insert(2)
-avl.insert(1)
-avl.insert(4)
-avl.insert(5)
-avl.insert(6)
-avl.printTree()
+for i in range(10):
+    print("Inserting {}".format(i))
+    avl.insert(i)
+    print(avl)
+for i in range(10):
+    print("Deleting {}".format(i))
+    avl.deleteValue(i)
+    print(avl)
